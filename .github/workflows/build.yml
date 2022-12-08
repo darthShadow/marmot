@@ -1,0 +1,38 @@
+---
+# Github Actions release for marmot
+# -*- compile-command: "yamllint -f parsable build.yml" -*-
+
+name: Build
+
+# Trigger the workflow on push or manually
+on:
+  push:
+    branches:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      manual:
+        default: true
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+
+    - name: Build binary
+      shell: bash
+      run: |
+        mkdir -p dist
+        CGO_ENABLED=1 go build -ldflags "-s -w" -o ./dist/marmot .
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: marmot-linux
+        path: dist/marmot
